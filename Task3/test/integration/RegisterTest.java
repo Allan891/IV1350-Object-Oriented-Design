@@ -6,15 +6,30 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 class RegisterTest {
+    private Register testRegister;
+    private Amount testAmount;
+
+    @BeforeEach
+    void setUp() {
+        testRegister = new Register(new Amount(100.0));
+        testAmount = new Amount(150.0);
+    }
+
+    @AfterEach
+    void tearDown() {
+        testRegister = null;
+        testAmount = null;
+    }
 
     @Test
     void testUpdateRegisterWithoutReflection() {
-        Register register = new Register(new Amount(100.0));
-        register.updateRegister(new Amount(50.0));
+        testRegister.updateRegister(new Amount(50.0));
 
-        Amount expectedAmount = new Amount(150.0);
-        assertEquals(expectedAmount.getAmount(), register.getAmount().getAmount(), 0.001,
+        assertEquals(testAmount.getAmount(), testRegister.getAmount().getAmount(), 0.001,
             "Register should reflect updated total after sale.");
     }
 }
