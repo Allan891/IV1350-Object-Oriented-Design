@@ -1,0 +1,8 @@
+exceptions.DatabaseFailureException: Database failure: Simulated database failure for ID 999
+	at integration.ExternalInventorySystem.findItem(ExternalInventorySystem.java:76)
+	at controller.Controller.registerItem(Controller.java:59)
+	at view.View.registerItem(View.java:55)
+	at view.View.simulateSaleExecution(View.java:36)
+	at view.View.<init>(View.java:24)
+	at startup.Main.main(Main.java:23)
+

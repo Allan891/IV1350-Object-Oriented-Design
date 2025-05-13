@@ -5,10 +5,12 @@ import dto.SaleDTO;
 import model.Amount;
 import model.Item;
 import model.VAT;
+import exceptions.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import exceptions.ItemNotFoundException;
+import exceptions.DatabaseFailureException;
 /**
  * Simulates communication with an external inventory system.
  * Handles item lookup and updates item stock after a completed sale.
@@ -61,4 +63,36 @@ public class ExternalInventorySystem {
         }
             System.out.println("Inventory system updated");
     }
+
+    /**
+     * Retrieves item information and throws an exception if the item does not exist.
+     *
+     * @param identifier The item ID to search for.
+     * @return The item's DTO.
+     * @throws ItemNotFoundException If the item is not found.
+     */
+    public ItemDTO findItem(String identifier) throws ItemNotFoundException {
+        if ("999".equals(identifier)) {
+            throw new DatabaseFailureException("Simulated database failure for ID " + identifier);
+        }
+        if (!inventory.containsKey(identifier)) {
+            throw new ItemNotFoundException(identifier);
+        }
+        return inventory.get(identifier).getDTO();
+    }
+
+    public Item findItemById(String itemId) throws ItemNotFoundException {
+        if ("failDB".equals(itemId)) {
+            throw new DatabaseFailureException("Simulated database connection failure.");
+        }
+
+    // Assume inventory is a Map<String, Item>
+    
+        Item item = inventory.get(itemId);
+        if (item == null) {
+            throw new ItemNotFoundException(itemId);
+        }
+        return item;
+    }
+
 }

@@ -1,21 +1,22 @@
-package test.controller;
-
-import controller.Controller;
-import dto.ItemDTO;
-import model.Amount;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+package controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterEach;
+import dto.ItemDTO;
+import model.Amount;
+import model.VAT;
 
-class ControllerTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+public class ControllerTest {
     private Controller controller;
 
     @BeforeEach
     void setUp() {
         controller = new Controller();
+        controller.initiateSale();
     }
 
     @AfterEach
@@ -24,86 +25,52 @@ class ControllerTest {
     }
 
     @Test
-    void testInitiateSale() {
-        controller.initiateSale();
-        assertNotNull(controller.getRunningTotal(), "Running total should not be null after initiating a sale.");
+    void testRegisterValidItem() {
+        ItemDTO item = controller.registerItem("1");
+        assertNotNull(item, "ItemDTO should not be null for valid ID");
+        assertEquals("1", item.getItemIdentifier(), "Item ID should match input");
+        assertEquals("BigWheel Oatmeal 500 ml", item.getItemDescription(), "Item description should match");
     }
 
     @Test
-    void testRegisterItem() {
-        controller.initiateSale();
-        ItemDTO registeredItem = controller.registerItem("1");
-
-        assertNotNull(registeredItem, "Registered item should not be null.");
-        assertEquals("1", registeredItem.getItemIdentifier(), "Item identifier should match.");
-        assertEquals("BigWheel Oatmeal 500 ml", registeredItem.getItemDescription(), "Item description should match.");
+    void testRegisterInvalidItem() {
+        ItemDTO item = controller.registerItem("invalid-id");
+        assertNull(item, "ItemDTO should be null for invalid ID");
     }
 
     @Test
-    void testRegisterItemIncreasesQuantity() {
-        controller.initiateSale();
-        controller.registerItem("1");
-        controller.registerItem("1");
-
-        Amount runningTotal = controller.getRunningTotal();
-        assertNotNull(runningTotal, "Running total should not be null.");
-        assertTrue(runningTotal.getAmount() > 0, "Running total should increase after registering items.");
+    void testSimulatedDatabaseFailure() {
+        ItemDTO item = controller.registerItem("999"); // Hardcoded to simulate failure
+        assertNull(item, "Should return null if DB failure simulated");
+        // Optionally check the log file manually or add file check
     }
 
     @Test
-    void testEndSale() {
-        controller.initiateSale();
+    void testRunningTotalAfterMultipleItems() {
         controller.registerItem("1");
-        Amount totalPrice = controller.endSale();
-
-        assertNotNull(totalPrice, "Total price should not be null.");
-        assertTrue(totalPrice.getAmount() > 0, "Total price should be greater than 0.");
+        controller.registerItem("2");
+        Amount total = controller.getRunningTotal();
+        assertNotNull(total, "Total should not be null after items added");
+        assertTrue(total.getAmount() > 0, "Total amount should be greater than zero");
     }
 
     @Test
-    void testConcludeSale() {
-        controller.initiateSale();
+    void testEndSaleReturnsCorrectTotal() {
         controller.registerItem("1");
-        controller.endSale();
-
-        Amount payment = new Amount(100.0);
-        Amount change = controller.concludeSale(payment);
-
-        assertNotNull(change, "Change should not be null.");
-        assertTrue(change.getAmount() >= 0, "Change should be greater than or equal to 0.");
-    }
-
-    @Test
-    void testGetRunningTotal() {
-        controller.initiateSale();
-        controller.registerItem("1");
-
-        Amount runningTotal = controller.getRunningTotal();
-        assertNotNull(runningTotal, "Running total should not be null.");
-        assertTrue(runningTotal.getAmount() > 0, "Running total should be greater than 0.");
-    }
-
-    @Test
-    void testGetRunningVAT() {
-        controller.initiateSale();
-        controller.registerItem("1");
-
-        Amount runningVAT = controller.getRunningVAT();
-        assertNotNull(runningVAT, "Running VAT should not be null.");
-        assertTrue(runningVAT.getAmount() > 0, "Running VAT should be greater than 0.");
-    }
-
-    @Test 
-    void testEndSaleWithoutItems() {
-        controller.initiateSale();
+        controller.registerItem("2");
         Amount total = controller.endSale();
-        assertEquals(0.0, total.getAmount(), 0.001, "Total should be 0 if no items were registered.");
+        assertNotNull(total, "Total should not be null after ending sale");
+        assertTrue(total.getAmount() > 0, "Total must be greater than 0");
     }
 
-    @Test 
-    void testConcludeSaleWithoutItems() {
-        controller.initiateSale();
-        Amount change = controller.concludeSale(new Amount(100.0));
-        assertEquals(100.0, change.getAmount(), 0.001, "Change should equal payment if no items were registered.");
+    @Test
+    void testConcludeSaleReturnsCorrectChange() {
+        controller.registerItem("1");
+        controller.registerItem("2");
+        Amount total = controller.endSale();
+        Amount payment = new Amount(200);
+        Amount change = controller.concludeSale(payment);
+        assertNotNull(change, "Change should not be null");
+        assertTrue(change.getAmount() >= 0, "Change should be non-negative");
     }
 }

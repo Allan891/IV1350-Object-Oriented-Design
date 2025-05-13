@@ -31,7 +31,7 @@ public class View {
         controller.initiateSale();
         System.out.println("Sale initiated.");
 
-        String[] itemsToRegister = {"1", "1", "2", "3", "4", "1"};
+        String[] itemsToRegister = {"1", "1", "2", "3", "4", "1", "999"}; // "999" will simulate DB failure
         for (String itemIdentifier : itemsToRegister) {
             registerItem(itemIdentifier);
             printRunningTotal();
@@ -53,13 +53,17 @@ public class View {
      */
     private void registerItem(String itemIdentifier) {
         ItemDTO itemDTO = controller.registerItem(itemIdentifier);
-
+        if (itemDTO != null) {
             System.out.println("\nItem added:");
             System.out.println("Item ID: " + itemDTO.getItemIdentifier());
             System.out.println("Item name: " + itemDTO.getName());
             System.out.println("Item cost: " + String.format("%.2f", itemDTO.getPrice().getAmount()) + " SEK");
             System.out.println("VAT: " + (itemDTO.getVatRate().getRate() * 100) + "%");
             System.out.println("Item description: " + itemDTO.getItemDescription());
+        } else {
+            System.out.println("[User] Could not register item: " + itemIdentifier);
+            // Logging is handled inside the Controller.
+        }
     }
 
     /**
@@ -73,6 +77,3 @@ public class View {
         System.out.println("Total VAT: " + String.format("%.2f", runningVAT.getAmount()) + " SEK");
     }
 }
-
-
-

@@ -1,4 +1,5 @@
 package test.integration;
+import exceptions.DatabaseFailureException;
 
 import integration.ExternalInventorySystem;
 import dto.ItemDTO;
@@ -70,4 +71,14 @@ class ExternalInventorySystemTest {
     void testCheckIfItemIdentifierValidWithNull() {
         assertFalse(inventorySystem.checkIfItemIdentifierValid(null), "Null identifier should return false.");
     }
+
+
+    @Test
+    void testDatabaseFailureExceptionThrown() {
+        assertThrows(DatabaseFailureException.class, () -> {
+            inventorySystem.findItem("999"); // Simulated DB failure
+            }, "Should throw DatabaseFailureException when '999' is requested");
+    }
+    
+
 }
